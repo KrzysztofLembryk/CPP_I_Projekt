@@ -28,6 +28,7 @@ string *manuallyReadData(string const &line)
     {
         if (isspace(line[j]))
         {
+            // skip whitespaces
             if (i == j)
                 i++;
             else if(foundWord)
@@ -38,17 +39,16 @@ string *manuallyReadData(string const &line)
                 count++;
                 i = j + 1;
             }
-            j++;
         }
         else
-        {
             foundWord = true;
-            j++;
-        }
+
+        j++;
     }
-    if(count > 3)
+
+    if(count > 3 || count < 3)
     {
-        // ERROR: WRONG DATA
+        // ERROR: WRONG NUMBER OF DATA
     } 
     else
         return arr;
