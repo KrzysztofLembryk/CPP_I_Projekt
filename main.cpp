@@ -7,17 +7,55 @@ using namespace std;
 
 using umap_t = unordered_map<string, pair<string, string>>;
 
-
-namespace 
+namespace
 {
-    bool nonEmptyLine(string const & line) 
+    bool nonEmptyLine(string const &line)
     {
         return !line.empty();
     }
 }
 
+string *manuallyReadData(string const &line)
+{
+    size_t i, j, count, n;
+    string arr[3];
+    bool foundWord = false;
+
+    n = line.size();
+    i = j = count = 0;
+
+    while (j < n && count <= 3)
+    {
+        if (isspace(line[j]))
+        {
+            if (i == j)
+                i++;
+            else if(foundWord)
+            {
+                foundWord = false;
+                // if (count < 3)
+                //      copying to arr[count] string: i,..., j - 1
+                count++;
+                i = j + 1;
+            }
+            j++;
+        }
+        else
+        {
+            foundWord = true;
+            j++;
+        }
+    }
+    if(count > 3)
+    {
+        // ERROR: WRONG DATA
+    } 
+    else
+        return arr;
+}
+
 // BUG - RZE699 19.45 19.49, finds unnecessary match with 9 from plate number
-pair<string, string> readTimePattern(string const & line)
+pair<string, string> readTimePattern(string const &line)
 {
     regex timePattern("0?[8-9].[0-5][0-9]|1[0-9].[0-5][0-9]|20.00");
     smatch match;
@@ -38,13 +76,13 @@ pair<string, string> readTimePattern(string const & line)
     return timesPair;
 }
 
-string readPlatePattern(string const & line)
+string readPlatePattern(string const &line)
 {
     regex plateNumberPattern("[A-Z][A-Z0-9]{2,10}");
     smatch match;
-    
+
     regex_search(line, match, plateNumberPattern);
-    
+
     return match.str();
 }
 
@@ -54,23 +92,19 @@ void readLine() //(umap_t & mapp)
     string plates;
     string line;
     getline(cin, line);
-    if(nonEmptyLine(line))
+    if (nonEmptyLine(line))
     {
         plates = readPlatePattern(line);
         p = readTimePattern(line);
         cout << "plate number: " << plates << ", times: "
-        << p.first << ", " << p.second << '\n';
+             << p.first << ", " << p.second << '\n';
     }
-    
-
 }
 
 bool addToHashMap()
 {
     umap_t mapOfPlatesAndTimes;
 }
-
-
 
 int main()
 {
