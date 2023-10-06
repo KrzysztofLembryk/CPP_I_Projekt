@@ -24,6 +24,7 @@ pair<string, string> readTimePattern(string const & line)
     string::const_iterator searchStart(line.cbegin());
     string times[2];
     int i = 0;
+
     // regex_searach returns "" empty string when nothing found
     while (regex_search(searchStart, line.cend(), match, timePattern) && i < 2)
     {
@@ -41,14 +42,13 @@ string readPlatePattern(string const & line)
 {
     regex plateNumberPattern("[A-Z][A-Z0-9]{2,10}");
     smatch match;
-    // when we find sought times we check whether they are ok
     
     regex_search(line, match, plateNumberPattern);
     
     return match.str();
 }
 
-void readline() //(umap_t & mapp)
+void readLine() //(umap_t & mapp)
 {
     pair<string, string> p;
     string plates;
@@ -74,7 +74,7 @@ bool addToHashMap()
 
 int main()
 {
-    readline();
+    readLine();
 
     return 0;
 }
