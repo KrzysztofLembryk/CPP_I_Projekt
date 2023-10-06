@@ -15,10 +15,9 @@ namespace
     }
 }
 
-string *manuallyReadData(string const &line)
+int *manuallyReadData(string const &line, string* arr, size_t sizeOfArr)
 {
     size_t i, j, count, n;
-    string arr[3];
     bool foundWord = false;
 
     n = line.size();
@@ -34,7 +33,7 @@ string *manuallyReadData(string const &line)
             else if(foundWord)
             {
                 foundWord = false;
-                // if (count < 3)
+                // if (count < sizeOfArr)
                 //      copying to arr[count] string: i,..., j - 1
                 count++;
                 i = j + 1;
@@ -51,7 +50,7 @@ string *manuallyReadData(string const &line)
         // ERROR: WRONG NUMBER OF DATA
     } 
     else
-        return arr;
+        return 0;
 }
 
 // BUG - RZE699 19.45 19.49, finds unnecessary match with 9 from plate number
@@ -59,11 +58,8 @@ int readTimePattern(string const &inputStr, string &result)
 {
     regex timePattern("0?[8-9]\\.[0-5][0-9]|1[0-9]\\.[0-5][0-9]|20\\.00");
     smatch match;
-    //string::const_iterator searchStart(line.cbegin());
-    string times;
-    //int i = 0;
 
-    // regex_searach returns "" empty string when nothing found
+    // regex_search returns "" empty string when nothing found
     regex_search(inputStr, match, timePattern);
     result = match.str();
     
@@ -90,17 +86,22 @@ int readPlatePattern(string const &inputStr, string &result)
 
 void readLine() //(umap_t & mapp)
 {
+    string arr[3];
+    size_t sizeArr = 3;
     string time1, time2;
     string plates;
     string line;
 
     getline(cin, line);
 
-    if (nonEmptyLine(line))
+    if(nonEmptyLine(line))
     {
-        readPlatePattern(line, plates);
-        readTimePattern(line, time1);
+        manuallyReadData(line, arr, sizeArr);
+        readPlatePattern(arr[0], plates);
+        readTimePattern(arr[1], time1);
+        readTimePattern(arr[2], time2);
     }
+    
 }
 
 bool addToHashMap()
