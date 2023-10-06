@@ -15,7 +15,7 @@ namespace
     }
 }
 
-int *manuallyReadData(string const &line, string* arr, size_t sizeOfArr)
+int manuallyReadData(string const &line, string* arr, size_t sizeOfArr)
 {
     size_t i, j, count, n;
     bool foundWord = false;
@@ -33,9 +33,15 @@ int *manuallyReadData(string const &line, string* arr, size_t sizeOfArr)
             else if(foundWord)
             {
                 foundWord = false;
-                // if (count < sizeOfArr)
-                //      copying to arr[count] string: i,..., j - 1
+
+                if (count < sizeOfArr)
+                    arr[count] = line.substr(i, j - 1);
+                
                 count++;
+
+                if(count > 3)
+                    return -1;
+
                 i = j + 1;
             }
         }
@@ -45,15 +51,9 @@ int *manuallyReadData(string const &line, string* arr, size_t sizeOfArr)
         j++;
     }
 
-    if(count != 3)
-    {
-        // ERROR: WRONG NUMBER OF DATA
-    } 
-    else
-        return 0;
+    return 0;
 }
 
-// BUG - RZE699 19.45 19.49, finds unnecessary match with 9 from plate number
 int readTimePattern(string const &inputStr, string &result)
 {
     regex timePattern("0?[8-9]\\.[0-5][0-9]|1[0-9]\\.[0-5][0-9]|20\\.00");
