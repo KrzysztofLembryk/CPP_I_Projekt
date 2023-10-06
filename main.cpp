@@ -46,7 +46,7 @@ string *manuallyReadData(string const &line)
         j++;
     }
 
-    if(count > 3 || count < 3)
+    if(count != 3)
     {
         // ERROR: WRONG NUMBER OF DATA
     } 
@@ -55,49 +55,51 @@ string *manuallyReadData(string const &line)
 }
 
 // BUG - RZE699 19.45 19.49, finds unnecessary match with 9 from plate number
-pair<string, string> readTimePattern(string const &line)
+int readTimePattern(string const &line, string & result)
 {
     regex timePattern("0?[8-9].[0-5][0-9]|1[0-9].[0-5][0-9]|20.00");
     smatch match;
-    string::const_iterator searchStart(line.cbegin());
-    string times[2];
-    int i = 0;
+    //string::const_iterator searchStart(line.cbegin());
+    string times;
+    //int i = 0;
 
     // regex_searach returns "" empty string when nothing found
-    while (regex_search(searchStart, line.cend(), match, timePattern) && i < 2)
-    {
-        times[i] = match.str();
-        searchStart = match.suffix().first;
-        i++;
-    }
+    regex_search(line, match, timePattern);
+    result = match.str();
+    
+    if(result == "") // regex didnt find correct pattern
+        return -1;
 
-    pair<string, string> timesPair(times[0], times[1]);
-
-    return timesPair;
+    return 0;
 }
 
-string readPlatePattern(string const &line)
+int readPlatePattern(string const &line, string &result)
 {
     regex plateNumberPattern("[A-Z][A-Z0-9]{2,10}");
     smatch match;
 
     regex_search(line, match, plateNumberPattern);
 
-    return match.str();
+    result = match.str();
+
+    if(result == "")
+        return -1;
+
+    return 0;
 }
 
 void readLine() //(umap_t & mapp)
 {
-    pair<string, string> p;
+    string time1, time2;
     string plates;
     string line;
+
     getline(cin, line);
+
     if (nonEmptyLine(line))
     {
-        plates = readPlatePattern(line);
-        p = readTimePattern(line);
-        cout << "plate number: " << plates << ", times: "
-             << p.first << ", " << p.second << '\n';
+        readPlatePattern(line, plates);
+        readTimePattern(line, time1);
     }
 }
 
