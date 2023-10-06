@@ -55,16 +55,16 @@ string *manuallyReadData(string const &line)
 }
 
 // BUG - RZE699 19.45 19.49, finds unnecessary match with 9 from plate number
-int readTimePattern(string const &line, string & result)
+int readTimePattern(string const &inputStr, string &result)
 {
-    regex timePattern("0?[8-9].[0-5][0-9]|1[0-9].[0-5][0-9]|20.00");
+    regex timePattern("0?[8-9]\\.[0-5][0-9]|1[0-9]\\.[0-5][0-9]|20\\.00");
     smatch match;
     //string::const_iterator searchStart(line.cbegin());
     string times;
     //int i = 0;
 
     // regex_searach returns "" empty string when nothing found
-    regex_search(line, match, timePattern);
+    regex_search(inputStr, match, timePattern);
     result = match.str();
     
     if(result == "") // regex didnt find correct pattern
@@ -73,12 +73,12 @@ int readTimePattern(string const &line, string & result)
     return 0;
 }
 
-int readPlatePattern(string const &line, string &result)
+int readPlatePattern(string const &inputStr, string &result)
 {
     regex plateNumberPattern("[A-Z][A-Z0-9]{2,10}");
     smatch match;
 
-    regex_search(line, match, plateNumberPattern);
+    regex_search(inputStr, match, plateNumberPattern);
 
     result = match.str();
 
