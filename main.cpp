@@ -19,7 +19,7 @@ int manuallyReadData(string const &_line, string* arr, size_t sizeOfArr)
 {
     size_t i, j, count, n;
     bool foundWord = false;
-    string line = _line + " ";
+    string line = _line + " "; // temporary solution
     n = line.size();
     i = j = count = 0;
 
