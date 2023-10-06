@@ -15,11 +15,11 @@ namespace
     }
 }
 
-int manuallyReadData(string const &line, string* arr, size_t sizeOfArr)
+int manuallyReadData(string const &_line, string* arr, size_t sizeOfArr)
 {
     size_t i, j, count, n;
     bool foundWord = false;
-
+    string line = _line + " ";
     n = line.size();
     i = j = count = 0;
 
@@ -35,7 +35,7 @@ int manuallyReadData(string const &line, string* arr, size_t sizeOfArr)
                 foundWord = false;
 
                 if (count < sizeOfArr)
-                    arr[count] = line.substr(i, j - 1);
+                    arr[count] = line.substr(i, j - i);
                 
                 count++;
 
@@ -97,12 +97,20 @@ void readLine() //(umap_t & mapp)
     if(nonEmptyLine(line))
     {
         manuallyReadData(line, arr, sizeArr);
+        for(int i = 0; i < 3; i++)
+            cout << arr[i] << ", ";
+
+        cout << '\n';
         readPlatePattern(arr[0], plates);
+        cout << "plate: " << plates << '\n';
         readTimePattern(arr[1], time1);
+        cout << "time1: " << time1 << '\n';
         readTimePattern(arr[2], time2);
+        cout << "time2: " << time2 << '\n';
     }
     
 }
+
 
 bool addToHashMap()
 {
