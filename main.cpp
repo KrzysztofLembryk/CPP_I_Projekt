@@ -78,7 +78,7 @@ int readTimePattern(string const &inputStr, string &result)
     regex timePattern("0?[0-9]\\.[0-5][0-9]|1[0-9]\\.[0-5][0-9]|2[0-3]\\.[0-5][0-9]");
     regex allowedTimePattern("0?[8-9]\\.[0-5][0-9]|1[0-9]\\.[0-5][0-9]|20\\.00");
 
-    if(inputStr == "")
+    if(inputStr.empty())
         return 1;
     
     // regex won't find that 14.444 is incorrect    
@@ -90,7 +90,7 @@ int readTimePattern(string const &inputStr, string &result)
     result = match.str();
 
     // regex_search returns "" empty string when nothing found
-    if(result == "")
+    if(result.empty())
         return -1;
     
     // if string has correct time pattern, we check whether it has time pattern
@@ -98,7 +98,7 @@ int readTimePattern(string const &inputStr, string &result)
     regex_search(inputStr, match, allowedTimePattern);
     result = match.str();
 
-    if (result == "") 
+    if (result.empty()) 
         return -2;
 
     return 0;
@@ -113,7 +113,7 @@ int readPlatePattern(string const &inputStr, string &result)
 
     result = match.str();
 
-    if (result == "")
+    if (result.empty())
         return -1;
 
     return 0;
