@@ -148,16 +148,18 @@ bool calcTimeOfStay(string const &time1, string const &time2)
     minuteStart = convertMinutes(time1);
     minuteEnd = convertMinutes(time2);
 
-    if (hourStart <= hourEnd)
+    if (hourStart <= hourEnd && minuteStart < minuteEnd)
     {
         minuteDifference = (hourEnd - hourStart) * 60 +
                                minuteEnd - minuteStart;
+        cout << "min diff: " << minuteDifference << '\n';
         return minuteDifference >= 10;
     }
     else
     {
         minuteDifference = (20 - hourStart) * 60 - minuteStart +
                              (hourEnd - 8) * 60 + minuteEnd;
+        cout << "min diff: " << minuteDifference << '\n';
         return minuteDifference >= 10;
     }
 }
@@ -212,6 +214,6 @@ bool addToHashMap()
 int main()
 {
     //readLine();
-    cout << stoi("05");
+    calcTimeOfStay("12.45", "12.54");
     return 0;
 }
