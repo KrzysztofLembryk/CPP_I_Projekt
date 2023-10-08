@@ -7,6 +7,9 @@ using namespace std;
 
 using umap_t = unordered_map<string, pair<string, string>>;
 
+const int ERROR = -1;
+const int END = 1;
+
 namespace
 {
     bool nonEmptyLine(string const &line)
@@ -45,7 +48,7 @@ int manuallyReadData(string const &line, string *arr, size_t sizeOfArr)
                 count++;
 
                 if (count > 3)
-                    return -1;
+                    return ERROR;
 
                 i = j + 1;
             }
@@ -62,9 +65,11 @@ int manuallyReadData(string const &line, string *arr, size_t sizeOfArr)
         arr[count] = line.substr(i, j - i);
         count++;
     }
+    if(count == 1 && arr[0] == "zzz")
+        return END;
     if (count < 2) // too few strings on input
-        return -1;
-
+        return ERROR;
+    
     return 0;
 }
 
@@ -79,19 +84,19 @@ int readTimePattern(string const &inputStr, string &result)
     regex allowedTimePattern("0?[8-9]\\.[0-5][0-9]|1[0-9]\\.[0-5][0-9]|20\\.00");
 
     if (inputStr.empty())
-        return 1;
+        return 0;
 
     // regex won't find that 14.444 is incorrect
     if (inputStr.size() != 4 && inputStr.size() != 5)
-        return -1;
+        return ERROR;
 
     // first we check whether given string has correct time format
-    regex_search(inputStr, match, timePattern);
-    result = match.str();
+    //regex_search(inputStr, match, timePattern);
+    //result = match.str();
 
     // regex_search returns "" empty string when nothing found
-    if (result.empty())
-        return -1;
+    //if (result.empty())
+    //    return ERROR;
 
     // if string has correct time pattern, we check whether it has time pattern
     // allowed by our rules
@@ -99,7 +104,7 @@ int readTimePattern(string const &inputStr, string &result)
     result = match.str();
 
     if (result.empty())
-        return -2;
+        return ERROR;
 
     return 0;
 }
@@ -110,28 +115,23 @@ int readPlatePattern(string const &inputStr, string &result)
     smatch match;
 
     if(inputStr.size() > 11 || inputStr.size() < 3)
-        return -1;
+        return ERROR;
 
     regex_search(inputStr, match, plateNumberPattern);
 
     result = match.str();
 
     if (result.empty())
-        return -1;
+        return ERROR;
 
     return 0;
 }
 
 int convertHours(string const &time)
 {
-    //if (time[0] == '0')
-    //    return stoi(time.substr(1, 1));
-    //else
-    //{
     if (time.size() == 5)
         return stoi(time.substr(0, 2));
     return stoi(time.substr(0, 1));
-    //}
 }
 
 int convertMinutes(string const &time)
@@ -155,33 +155,39 @@ bool calcTimeOfStay(string const &time1, string const &time2)
     {
         minuteDifference = (hourEnd - hourStart) * 60 +
                                minuteEnd - minuteStart;
+
         cout << "min diff: " << minuteDifference << '\n';
+
         return minuteDifference >= 10;
     }
     else
     {
         minuteDifference = (20 - hourStart) * 60 - minuteStart +
                              (hourEnd - 8) * 60 + minuteEnd;
+
         cout << "min diff: " << minuteDifference << '\n';
+
         return minuteDifference >= 10;
     }
 }
 
-void readLine() //(umap_t & mapp)
+int readLine(string const &line) //(umap_t & mapp)
 {
     string arr[3];
     size_t sizeArr = 3;
-    string time1, time2;
-    string plates;
-    string line;
-
-    getline(cin, line);
-
+    string plates, time1, time2;
+    
     if (nonEmptyLine(line))
     {
-        if (manuallyReadData(line, arr, sizeArr) == -1)
+        if (manuallyReadData(line, arr, sizeArr) == ERROR)
         {
             cout << "manuallyReadData - WRONG INPUT DATA \n";
+            return ERROR;
+        }
+        else if(manuallyReadData(line, arr, sizeArr) == END)
+        {
+            cout << "End of programme\n";
+            return END;
         }
         else
         {
@@ -189,14 +195,14 @@ void readLine() //(umap_t & mapp)
                 cout << arr[i] << ", ";
 
             cout << '\n';
-            if (readPlatePattern(arr[0], plates) == -1)
+            if (readPlatePattern(arr[0], plates) == ERROR)
             {
                 cout << "WRONG PLATE PATTERN \n";
             }
             else
                 cout << "plate: " << plates << '\n';
 
-            if (readTimePattern(arr[1], time1) == -1 || readTimePattern(arr[2], time2) == -1)
+            if (readTimePattern(arr[1], time1) == ERROR || readTimePattern(arr[2], time2) == ERROR)
             {
                 cout << "WRONG TIME PATTERN \n";
             }
@@ -209,14 +215,19 @@ void readLine() //(umap_t & mapp)
     }
 }
 
-bool addToHashMap()
+bool mainLoop()
 {
+    string line;
     umap_t mapOfPlatesAndTimes;
+    while(getline(cin, line))
+    {
+
+    }
 }
 
 int main()
 {
-    readLine();
+    //readLine();
     
     return 0;
 }
