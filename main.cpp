@@ -65,11 +65,11 @@ int manuallyReadData(string const &line, string *arr, size_t sizeOfArr)
         arr[count] = line.substr(i, j - i);
         count++;
     }
-    if(count == 1 && arr[0] == "zzz")
+    if (count == 1 && arr[0] == "zzz")
         return END;
     if (count < 2) // too few strings on input
         return ERROR;
-    
+
     return 0;
 }
 
@@ -91,11 +91,11 @@ int readTimePattern(string const &inputStr, string &result)
         return ERROR;
 
     // first we check whether given string has correct time format
-    //regex_search(inputStr, match, timePattern);
-    //result = match.str();
+    // regex_search(inputStr, match, timePattern);
+    // result = match.str();
 
     // regex_search returns "" empty string when nothing found
-    //if (result.empty())
+    // if (result.empty())
     //    return ERROR;
 
     // if string has correct time pattern, we check whether it has time pattern
@@ -114,7 +114,7 @@ int readPlatePattern(string const &inputStr, string &result)
     regex plateNumberPattern("[A-Z][A-Z0-9]{2,10}");
     smatch match;
 
-    if(inputStr.size() > 11 || inputStr.size() < 3)
+    if (inputStr.size() > 11 || inputStr.size() < 3)
         return ERROR;
 
     regex_search(inputStr, match, plateNumberPattern);
@@ -154,7 +154,7 @@ bool calcTimeOfStay(string const &time1, string const &time2)
     if (hourStart <= hourEnd && minuteStart < minuteEnd)
     {
         minuteDifference = (hourEnd - hourStart) * 60 +
-                               minuteEnd - minuteStart;
+                           minuteEnd - minuteStart;
 
         cout << "min diff: " << minuteDifference << '\n';
 
@@ -163,7 +163,7 @@ bool calcTimeOfStay(string const &time1, string const &time2)
     else
     {
         minuteDifference = (20 - hourStart) * 60 - minuteStart +
-                             (hourEnd - 8) * 60 + minuteEnd;
+                           (hourEnd - 8) * 60 + minuteEnd;
 
         cout << "min diff: " << minuteDifference << '\n';
 
@@ -171,12 +171,12 @@ bool calcTimeOfStay(string const &time1, string const &time2)
     }
 }
 
-int readLine(string const &line) //(umap_t & mapp)
+int readLine(string const &line, string &plates,
+             string &time1, string &time2)
 {
     string arr[3];
     size_t sizeArr = 3;
-    string plates, time1, time2;
-    
+
     if (nonEmptyLine(line))
     {
         if (manuallyReadData(line, arr, sizeArr) == ERROR)
@@ -184,7 +184,7 @@ int readLine(string const &line) //(umap_t & mapp)
             cout << "manuallyReadData - WRONG INPUT DATA \n";
             return ERROR;
         }
-        else if(manuallyReadData(line, arr, sizeArr) == END)
+        else if (manuallyReadData(line, arr, sizeArr) == END)
         {
             cout << "End of programme\n";
             return END;
@@ -213,21 +213,27 @@ int readLine(string const &line) //(umap_t & mapp)
             }
         }
     }
+    else
+        return ERROR;
+    return 0;
 }
 
-bool mainLoop()
+int mainLoop()
 {
-    string line;
+    string line, plates, time1, time2;
     umap_t mapOfPlatesAndTimes;
-    while(getline(cin, line))
-    {
 
+    while (getline(cin, line))
+    {
+        readLine(line, plates, time1, time2);
     }
+
+    return 0;
 }
 
 int main()
 {
-    //readLine();
-    
+    // readLine();
+
     return 0;
 }
