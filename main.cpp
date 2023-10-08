@@ -6,6 +6,7 @@
 using namespace std;
 
 using umap_t = unordered_map<string, pair<string, string>>;
+using time_type = pair<int, int>;
 
 const int ERROR = -1;
 const int END = 1;
@@ -141,34 +142,38 @@ int convertMinutes(string const &time)
     return stoi(time.substr(2, 2));
 }
 
-bool calcTimeOfStay(string const &time1, string const &time2)
+time_type convertTime(string const &time)
 {
-    int hourStart, minuteStart, hourEnd, minuteEnd;
+    time_type p;
+    p.first = convertHours(time);
+    p.second = convertMinutes(time);
+    return p;
+}
+
+bool convertAndCheckTimeOfStay(string const &time1, string const &time2,
+                               time_type &t2)
+{
+    time_type timeStart, timeEnd;
     int minuteDifference;
+    timeStart = convertTime(time1);
+    timeEnd = convertTime(time2);
+    t2 = timeEnd;
 
-    hourStart = convertHours(time1);
-    hourEnd = convertHours(time2);
-    minuteStart = convertMinutes(time1);
-    minuteEnd = convertMinutes(time2);
-
-    if (hourStart <= hourEnd && minuteStart < minuteEnd)
+    if (timeStart.first <= timeEnd.first && timeStart.second < timeEnd.second)
     {
-        minuteDifference = (hourEnd - hourStart) * 60 +
-                           minuteEnd - minuteStart;
+        minuteDifference = (timeEnd.first - timeStart.first) * 60 +
+                           timeEnd.second - timeStart.second;
 
         cout << "min diff: " << minuteDifference << '\n';
-
-        return minuteDifference >= 10;
     }
     else
     {
-        minuteDifference = (20 - hourStart) * 60 - minuteStart +
-                           (hourEnd - 8) * 60 + minuteEnd;
+        minuteDifference = (20 - timeStart.first) * 60 - timeStart.second +
+                           (timeEnd.first - 8) * 60 + timeEnd.second;
 
         cout << "min diff: " << minuteDifference << '\n';
-
-        return minuteDifference >= 10;
     }
+    return minuteDifference >= 10;
 }
 
 int readLine(string const &line, string &plates,
@@ -218,14 +223,33 @@ int readLine(string const &line, string &plates,
     return 0;
 }
 
+int addToHashMap(umap_t &map, string const &plates,
+                 string const &time1, string const &time2)
+{
+    return 0;
+}
+
 int mainLoop()
 {
-    string line, plates, time1, time2;
+    string line, plates, time1Str, time2Str;
+    time_type time2;
     umap_t mapOfPlatesAndTimes;
 
     while (getline(cin, line))
     {
-        readLine(line, plates, time1, time2);
+        readLine(line, plates, time1Str, time2Str);
+        // time2Str empty means we check if for given plates
+        // parking is paid
+        if (time2Str.empty())
+        {
+        }
+        else
+        {
+            if (convertAndCheckTimeOfStay(time1Str, time2Str, time2))
+            {
+                addToHashMap(mapOfPlatesAndTimes, plates, time1Str, time2Str);
+            }
+        }
     }
 
     return 0;
