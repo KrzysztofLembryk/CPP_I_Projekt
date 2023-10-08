@@ -109,6 +109,9 @@ int readPlatePattern(string const &inputStr, string &result)
     regex plateNumberPattern("[A-Z][A-Z0-9]{2,10}");
     smatch match;
 
+    if(inputStr.size() > 11 || inputStr.size() < 3)
+        return -1;
+
     regex_search(inputStr, match, plateNumberPattern);
 
     result = match.str();
@@ -213,7 +216,7 @@ bool addToHashMap()
 
 int main()
 {
-    //readLine();
-    calcTimeOfStay("12.45", "12.54");
+    readLine();
+    
     return 0;
 }
