@@ -150,15 +150,13 @@ time_type convertTime(string const &time)
     return p;
 }
 
-bool convertAndCheckTimeOfStay(string const &time1, string const &time2,
-                               time_type &t2)
+bool correctTimeOfStay(string const &time1, string const &time2)
 {
     time_type timeStart, timeEnd;
     int minuteDifference;
     timeStart = convertTime(time1);
     timeEnd = convertTime(time2);
-    t2 = timeEnd;
-
+    
     if (timeStart.first <= timeEnd.first && timeStart.second < timeEnd.second)
     {
         minuteDifference = (timeEnd.first - timeStart.first) * 60 +
@@ -184,12 +182,13 @@ int readLine(string const &line, string &plates,
 
     if (nonEmptyLine(line))
     {
-        if (manuallyReadData(line, arr, sizeArr) == ERROR)
+        int returnCode = manuallyReadData(line, arr, sizeArr);
+        if (returnCode == ERROR)
         {
             cout << "manuallyReadData - WRONG INPUT DATA \n";
             return ERROR;
         }
-        else if (manuallyReadData(line, arr, sizeArr) == END)
+        else if (returnCode == END)
         {
             cout << "End of programme\n";
             return END;
@@ -223,31 +222,51 @@ int readLine(string const &line, string &plates,
     return 0;
 }
 
-int addToHashMap(umap_t &map, string const &plates,
-                 string const &time1, string const &time2)
+int addToHashMap(umap_t &map, string const &plates, time_type const &time)
 {
     return 0;
 }
 
+int checkIfParkingPaid(umap_t &map, time_type time)
+{
+    return 0;
+}
+
+// input: plates time1 time2 OR plates time
 int mainLoop()
 {
     string line, plates, time1Str, time2Str;
     time_type time2;
     umap_t mapOfPlatesAndTimes;
+    int returnCode;
+    size_t nbrOfCurrentLine = 0;
 
     while (getline(cin, line))
     {
-        readLine(line, plates, time1Str, time2Str);
-        // time2Str empty means we check if for given plates
-        // parking is paid
-        if (time2Str.empty())
+        nbrOfCurrentLine++;
+        returnCode = readLine(line, plates, time1Str, time2Str);
+
+        if (returnCode == ERROR)
+            cerr << "BLAD";
+        else if (returnCode == END)
         {
+            cout << "END\n";
+            break;
         }
         else
         {
-            if (convertAndCheckTimeOfStay(time1Str, time2Str, time2))
+            // time2Str empty means we check if for given plates
+            // parking is paid
+            if (time2Str.empty())
             {
-                addToHashMap(mapOfPlatesAndTimes, plates, time1Str, time2Str);
+                checkIfParkingPaid(mapOfPlatesAndTimes, convertTime(time1Str));
+            }
+            else
+            {
+                if (correctTimeOfStay(time1Str, time2Str))
+                {
+                    addToHashMap(mapOfPlatesAndTimes, plates, convertTime(time2Str));
+                }
             }
         }
     }
