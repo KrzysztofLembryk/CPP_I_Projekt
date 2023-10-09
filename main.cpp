@@ -4,10 +4,10 @@
 #include <unordered_map>
 
 using namespace std;
-
-using umap_t = unordered_map<string, pair<string, string>>;
 using time_type = pair<int, int>;
+using umap_t = unordered_map<string, time_type>;
 
+const size_t MAX_NUBMER_OF_STRING_INPUTS = 3;
 const int ERROR = -1;
 const int END = 1;
 
@@ -131,12 +131,9 @@ time_type convertTime(string const &time)
     return p;
 }
 
-bool correctTimeOfStay(string const &time1, string const &time2)
+bool correctTimeOfStay(time_type const &timeStart, time_type const &timeEnd)
 {
-    time_type timeStart, timeEnd;
     int minuteDifference;
-    timeStart = convertTime(time1);
-    timeEnd = convertTime(time2);
     
     if (timeStart.first <= timeEnd.first && timeStart.second < timeEnd.second)
     {
@@ -155,11 +152,17 @@ bool correctTimeOfStay(string const &time1, string const &time2)
     return minuteDifference >= 10;
 }
 
+int calcDiffBetweenTimes(time_type t, time_type tSubstract)
+{
+    return (t.first - tSubstract.first) * 60 +
+                           t.second - tSubstract.second;
+}
+
 int readLine(string const &line, string &plates,
              string &time1, string &time2)
 {
-    string arr[3];
-    size_t sizeArr = 3;
+    string arr[MAX_NUBMER_OF_STRING_INPUTS];
+    size_t sizeArr = MAX_NUBMER_OF_STRING_INPUTS;   
 
     if (nonEmptyLine(line))
     {
@@ -176,7 +179,7 @@ int readLine(string const &line, string &plates,
         }
         else
         {
-            for (int i = 0; i < 3; i++)
+            for (int i = 0; i < MAX_NUBMER_OF_STRING_INPUTS; i++)
                 cout << arr[i] << ", ";
 
             cout << '\n';
@@ -208,27 +211,31 @@ int addToHashMap(umap_t &map, string const &plates, time_type const &time)
     return 0;
 }
 
-int checkIfParkingPaid(umap_t &map, time_type time)
+bool isParkingPaid(umap_t &map, time_type time)
 {
-    return 0;
+    return true;
 }
 
 // input: plates time1 time2 OR plates time
 int mainLoop()
 {
     string line, plates, time1Str, time2Str;
-    time_type time2;
     umap_t mapOfPlatesAndTimes;
-    int returnCode;
     size_t nbrOfCurrentLine = 0;
+    time_type prevTime;
+    int returnCode;
+    
+    prevTime.first = 8;
+    prevTime.second = 0;
 
     while (getline(cin, line))
     {
+        time1Str = time2Str = "";
         nbrOfCurrentLine++;
         returnCode = readLine(line, plates, time1Str, time2Str);
 
         if (returnCode == ERROR)
-            cerr << "BLAD";
+            cerr << "ERROR " << nbrOfCurrentLine << '\n';
         else if (returnCode == END)
         {
             cout << "END\n";
@@ -236,19 +243,29 @@ int mainLoop()
         }
         else
         {
-            // time2Str empty means we check if for given plates
-            // parking is paid
+            time_type time1 = convertTime(time1Str);
             if (time2Str.empty())
             {
-                checkIfParkingPaid(mapOfPlatesAndTimes, convertTime(time1Str));
+                if(isParkingPaid(mapOfPlatesAndTimes, time1))
+                    cout << "YES " << nbrOfCurrentLine << '\n';
+                else
+                    cout << "NO " << nbrOfCurrentLine << '\n';
             }
             else
             {
-                if (correctTimeOfStay(time1Str, time2Str))
+                time_type time2 = convertTime(time2Str);
+                if (correctTimeOfStay(time1, time2))
                 {
-                    addToHashMap(mapOfPlatesAndTimes, plates, convertTime(time2Str));
+                    addToHashMap(mapOfPlatesAndTimes, plates, time2);
+                    cout << "OK " << nbrOfCurrentLine << '\n';
+                }
+                else
+                {
+                    cout << "TIME OF STAY LESS THAN 10 min\n";
+                    cerr << "ERROR " << nbrOfCurrentLine << '\n';
                 }
             }
+            prevTime = time1;
         }
     }
 
@@ -257,7 +274,7 @@ int mainLoop()
 
 int main()
 {
-    // readLine();
-
+    // readLine(); 
+    mainLoop();
     return 0;
 }
