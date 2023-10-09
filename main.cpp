@@ -23,7 +23,6 @@ int manuallyReadData(string const &line, string *arr, size_t sizeOfArr)
 {
     size_t i, j, count, n;
     bool foundWord = false;
-    // string line = _line + " "; // temporary solution
     n = line.size();
     i = j = count = 0;
 
@@ -74,38 +73,22 @@ int manuallyReadData(string const &line, string *arr, size_t sizeOfArr)
     return 0;
 }
 
-//  0 - inputStr has good format
-//  1 - inputStr is empty
-// -1 - inputStr is not in time format
-// -2 - inputStr is not in allowed by us time format
 int readTimePattern(string const &inputStr, string &result)
 {
     smatch match;
-    regex timePattern("0?[0-9]\\.[0-5][0-9]|1[0-9]\\.[0-5][0-9]|2[0-3]\\.[0-5][0-9]");
     regex allowedTimePattern("0?[8-9]\\.[0-5][0-9]|1[0-9]\\.[0-5][0-9]|20\\.00");
 
     if (inputStr.empty())
         return 0;
 
-    // regex won't find that 14.444 is incorrect
-    if (inputStr.size() != 4 && inputStr.size() != 5)
-        return ERROR;
-
-    // first we check whether given string has correct time format
-    // regex_search(inputStr, match, timePattern);
-    // result = match.str();
-
     // regex_search returns "" empty string when nothing found
-    // if (result.empty())
-    //    return ERROR;
-
-    // if string has correct time pattern, we check whether it has time pattern
-    // allowed by our rules
-    regex_search(inputStr, match, allowedTimePattern);
+    if(!regex_match(inputStr, match, allowedTimePattern))
+        return ERROR;
+    
     result = match.str();
 
-    if (result.empty())
-        return ERROR;
+    //if (result.empty())
+    //    return ERROR;
 
     return 0;
 }
@@ -115,15 +98,13 @@ int readPlatePattern(string const &inputStr, string &result)
     regex plateNumberPattern("[A-Z][A-Z0-9]{2,10}");
     smatch match;
 
-    if (inputStr.size() > 11 || inputStr.size() < 3)
+    if(!regex_match(inputStr, match, plateNumberPattern))
         return ERROR;
-
-    regex_search(inputStr, match, plateNumberPattern);
 
     result = match.str();
 
-    if (result.empty())
-        return ERROR;
+    //if (result.empty())
+    //    return ERROR;
 
     return 0;
 }
