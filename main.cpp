@@ -19,6 +19,54 @@ namespace
     }
 }
 
+void printArr(string *arr, size_t n)
+{
+    for(size_t i = 0; i < n; i++)
+        cout << arr[i] << " ";
+    cout << '\n';
+}
+
+int newDataRead(string &line, string *arr)
+{
+    static regex const threeArgPattern(
+		"\\s*([A-Z][A-Z0-9]{2,10})\\s+(\\d\\d?\\.\\d\\d)\\s+((\\d\\d?\\.\\d\\d))\\s*");
+    smatch match;
+    if(!regex_match(line, match, threeArgPattern))
+    {
+        static regex const twoArgPattern(
+		"\\s*([A-Z][A-Z0-9]{2,10})\\s+(\\d\\d?\\.\\d\\d)\\s*");
+        if(!regex_match(line, match, twoArgPattern))
+            return ERROR;
+        
+        cout << "newDataRead - match: " << match.str() << '\n';
+        arr[0] = match[1].str();
+        arr[1] = match[2].str();
+        arr[2] = "";
+        printArr(arr, 3);
+    }
+    else
+    {
+        cout << "newDataRead - match: " << match.str() << '\n';
+        arr[0] = match[1].str();
+        arr[1] = match[2].str();
+        arr[2] = match[3].str();
+        printArr(arr, 3);
+    }
+    
+    return 0;
+}
+
+void foo()
+{
+    string arr[3], line;
+    while(getline(cin, line))
+    {
+        if(newDataRead(line, arr) == ERROR)
+            cout << "error\n";
+    }
+    
+}
+
 int manuallyReadData(string const &line, string *arr, size_t sizeOfArr)
 {
     size_t i, j, count, n;
@@ -275,6 +323,7 @@ int mainLoop()
 int main()
 {
     // readLine(); 
-    mainLoop();
+    //mainLoop();
+    foo();
     return 0;
 }
