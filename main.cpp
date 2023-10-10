@@ -30,7 +30,12 @@ int newDataRead(string const &line, string *arr)
         static regex const twoArgPattern(
 		"\\s*([A-Z][A-Z0-9]{2,10})\\s+(\\d\\d?\\.\\d\\d)\\s*");
         if(!regex_match(line, match, twoArgPattern))
-            return ERROR;
+        {
+            static regex const end("\\s*(zzz)\\s*");
+            if(!regex_match(line, match, end))
+                return ERROR;
+            return END;
+        }
         
         arr[0] = match[1].str();
         arr[1] = match[2].str();
@@ -47,7 +52,7 @@ int newDataRead(string const &line, string *arr)
 }
 
 
-int readTimePattern(string const &inputStr, string &result)
+int correctTimePattern(string const &inputStr)
 {
     smatch match;
     regex allowedTimePattern("0?[8-9]\\.[0-5][0-9]|1[0-9]\\.[0-5][0-9]|20\\.00");
@@ -58,30 +63,10 @@ int readTimePattern(string const &inputStr, string &result)
     // regex_search returns "" empty string when nothing found
     if(!regex_match(inputStr, match, allowedTimePattern))
         return ERROR;
-    
-    result = match.str();
-
-    //if (result.empty())
-    //    return ERROR;
 
     return 0;
 }
 
-int readPlatePattern(string const &inputStr, string &result)
-{
-    regex plateNumberPattern("[A-Z][A-Z0-9]{2,10}");
-    smatch match;
-
-    if(!regex_match(inputStr, match, plateNumberPattern))
-        return ERROR;
-
-    result = match.str();
-
-    //if (result.empty())
-    //    return ERROR;
-
-    return 0;
-}
 
 int convertHours(string const &time)
 {
@@ -97,29 +82,26 @@ int convertMinutes(string const &time)
     return stoi(time.substr(2, 2));
 }
 
-time_type convertTime(string const &time)
+int convertTime(string const &time)
 {
-    time_type p;
-    p.first = convertHours(time);
-    p.second = convertMinutes(time);
-    return p;
+    int hours = convertHours(time);
+    int minutes = convertMinutes(time);
+    return hours * 60 + minutes;
 }
 
-bool correctTimeOfStay(time_type const &timeStart, time_type const &timeEnd)
+bool correctTimeOfStay(int timeStart, int timeEnd)
 {
     int minuteDifference;
     
-    if (timeStart.first <= timeEnd.first && timeStart.second < timeEnd.second)
+    if (timeStart <= timeEnd)
     {
-        minuteDifference = (timeEnd.first - timeStart.first) * 60 +
-                           timeEnd.second - timeStart.second;
+        minuteDifference = timeStart - timeEnd;
 
         cout << "min diff: " << minuteDifference << '\n';
     }
     else
     {
-        minuteDifference = (20 - timeStart.first) * 60 - timeStart.second +
-                           (timeEnd.first - 8) * 60 + timeEnd.second;
+        minuteDifference = 20 * 60 - timeStart  + timeEnd - 8 * 60;
 
         cout << "min diff: " << minuteDifference << '\n';
     }
@@ -143,7 +125,7 @@ int readLine(string const &line, string &plates,
         int returnCode = newDataRead(line, arr);
         if (returnCode == ERROR)
         {
-            cout << "manuallyReadData - WRONG INPUT DATA \n";
+            cout << "WRONG INPUT DATA \n";
             return ERROR;
         }
         else if (returnCode == END)
@@ -153,25 +135,23 @@ int readLine(string const &line, string &plates,
         }
         else
         {
+            cout << "read strings: ";
             for (int i = 0; i < MAX_NUBMER_OF_STRING_INPUTS; i++)
                 cout << arr[i] << ", ";
-
             cout << '\n';
-            if (readPlatePattern(arr[0], plates) == ERROR)
-            {
-                cout << "WRONG PLATE PATTERN \n";
-            }
-            else
-                cout << "plate: " << plates << '\n';
 
-            if (readTimePattern(arr[1], time1) == ERROR || readTimePattern(arr[2], time2) == ERROR)
+            if (correctTimePattern(arr[1]) == ERROR || correctTimePattern(arr[2]) == ERROR)
             {
                 cout << "WRONG TIME PATTERN \n";
+                return ERROR;
             }
             else
             {
                 cout << "time1: " << time1 << '\n';
                 cout << "time2: " << time2 << '\n';
+                plates = arr[0];
+                time1 = arr[1];
+                time2 = arr[2];
             }
         }
     }
@@ -180,12 +160,12 @@ int readLine(string const &line, string &plates,
     return 0;
 }
 
-int addToHashMap(umap_t &map, string const &plates, time_type const &time)
+int addToHashMap(umap_t &map, string const &plates, int time)
 {
     return 0;
 }
 
-bool isParkingPaid(umap_t &map, time_type time)
+bool isParkingPaid(umap_t &map, int time)
 {
     return true;
 }
@@ -196,11 +176,10 @@ int mainLoop()
     string line, plates, time1Str, time2Str;
     umap_t mapOfPlatesAndTimes;
     size_t nbrOfCurrentLine = 0;
-    time_type prevTime;
+    int prevTime;
     int returnCode;
     
-    prevTime.first = 8;
-    prevTime.second = 0;
+    prevTime = 8 * 60;
 
     while (getline(cin, line))
     {
@@ -217,7 +196,7 @@ int mainLoop()
         }
         else
         {
-            time_type time1 = convertTime(time1Str);
+            int time1 = convertTime(time1Str);
             if (time2Str.empty())
             {
                 if(isParkingPaid(mapOfPlatesAndTimes, time1))
@@ -227,7 +206,7 @@ int mainLoop()
             }
             else
             {
-                time_type time2 = convertTime(time2Str);
+                int time2 = convertTime(time2Str);
                 if (correctTimeOfStay(time1, time2))
                 {
                     addToHashMap(mapOfPlatesAndTimes, plates, time2);
