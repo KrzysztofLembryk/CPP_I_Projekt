@@ -19,14 +19,8 @@ namespace
     }
 }
 
-void printArr(string *arr, size_t n)
-{
-    for(size_t i = 0; i < n; i++)
-        cout << arr[i] << " ";
-    cout << '\n';
-}
 
-int newDataRead(string &line, string *arr)
+int newDataRead(string const &line, string *arr)
 {
     static regex const threeArgPattern(
 		"\\s*([A-Z][A-Z0-9]{2,10})\\s+(\\d\\d?\\.\\d\\d)\\s+((\\d\\d?\\.\\d\\d))\\s*");
@@ -38,88 +32,20 @@ int newDataRead(string &line, string *arr)
         if(!regex_match(line, match, twoArgPattern))
             return ERROR;
         
-        cout << "newDataRead - match: " << match.str() << '\n';
         arr[0] = match[1].str();
         arr[1] = match[2].str();
         arr[2] = "";
-        printArr(arr, 3);
     }
     else
     {
-        cout << "newDataRead - match: " << match.str() << '\n';
         arr[0] = match[1].str();
         arr[1] = match[2].str();
         arr[2] = match[3].str();
-        printArr(arr, 3);
     }
     
     return 0;
 }
 
-void foo()
-{
-    string arr[3], line;
-    while(getline(cin, line))
-    {
-        if(newDataRead(line, arr) == ERROR)
-            cout << "error\n";
-    }
-    
-}
-
-int manuallyReadData(string const &line, string *arr, size_t sizeOfArr)
-{
-    size_t i, j, count, n;
-    bool foundWord = false;
-    n = line.size();
-    i = j = count = 0;
-
-    // if there are only two strings on input, we dont want to have
-    // in arr[2] random values
-    for (size_t k = 0; k < sizeOfArr; k++)
-        arr[k] = "";
-
-    while (j < n && count <= 3)
-    {
-        if (isspace(line[j]))
-        {
-            // skip whitespaces
-            if (i == j)
-                i++;
-            else if (foundWord)
-            {
-                foundWord = false;
-
-                if (count < sizeOfArr)
-                    arr[count] = line.substr(i, j - i);
-
-                count++;
-
-                if (count > 3)
-                    return ERROR;
-
-                i = j + 1;
-            }
-        }
-        else
-            foundWord = true;
-
-        j++;
-    }
-    // case when last, second/third word is present but is not followed by whitespace
-    // thus we wont go to else if(foundWord) and we wont copy this string to arr
-    if (count <= 2 && !isspace(line[j - 1]))
-    {
-        arr[count] = line.substr(i, j - i);
-        count++;
-    }
-    if (count == 1 && arr[0] == "zzz")
-        return END;
-    if (count < 2) // too few strings on input
-        return ERROR;
-
-    return 0;
-}
 
 int readTimePattern(string const &inputStr, string &result)
 {
@@ -214,7 +140,7 @@ int readLine(string const &line, string &plates,
 
     if (nonEmptyLine(line))
     {
-        int returnCode = manuallyReadData(line, arr, sizeArr);
+        int returnCode = newDataRead(line, arr);
         if (returnCode == ERROR)
         {
             cout << "manuallyReadData - WRONG INPUT DATA \n";
@@ -324,6 +250,5 @@ int main()
 {
     // readLine(); 
     //mainLoop();
-    foo();
     return 0;
 }
