@@ -159,13 +159,21 @@ int addToHashMap(string const &plates, time_type time, time_type prevTime,
     return 0;
 }
 
-void isParkingPaid(string const &plates, time_type time,
+int isParkingPaid(string const &plates, time_type currentTime,
                    umap_t const &map, int currentLine)
 {
-    if (true)
-        cout << "YES " << currentLine << '\n';
+    if(map.contains(plates))
+    {
+        time_type endOfStayTime = map.at(plates);
+        if(currentTime <= endOfStayTime)
+            cout << "YES " << currentLine << '\n';
+        else
+            cout << "NO " << currentLine << '\n';
+        
+        return 0;
+    }
     else
-        cout << "NO " << currentLine << '\n';
+        return ERROR; // or cout << "NO" << currentLine << '\n'; // dont know    
 }
 
 // input: plates time1 time2 OR plates time
@@ -206,9 +214,12 @@ int mainLoop()
             if (time2Str.empty())
             {
                 if (!newDay)
-                    isParkingPaid(plates, time1, platesTimesMAP1, currentLine);
+                    returnCode = isParkingPaid(plates, time1, platesTimesMAP1, currentLine);
                 else
-                    isParkingPaid(plates, time1, platesTimesMAP2, currentLine);
+                    returnCode = isParkingPaid(plates, time1, platesTimesMAP2, currentLine);
+                
+                if(returnCode == ERROR)
+                    cerr << "ERROR" << currentLine << '\n';
             }
             else
             {
