@@ -154,7 +154,7 @@ int readLine(string const &line, string &plates,
 }
 
 void checkWhereAndAddNewPlates(string const &plates, time_type timeStart,
- time_type timeEnd, umap_t &map1, umap_t &map2)
+                               time_type timeEnd, umap_t &map1, umap_t &map2)
 {
     if (timeStart < timeEnd)
     {
@@ -177,6 +177,9 @@ void checkWhereAndAddNewPlates(string const &plates, time_type timeStart,
         {
             map2.at(plates) = timeEnd;
         }
+        // timeStart > timeEnd so car can stay for whole current day
+        // current day map is map1
+        map1.at(plates) = 20 * 60;
     }
 }
 
@@ -185,7 +188,7 @@ void addToHashMap(string const &plates, time_type timeStart, time_type timeEnd,
 {
     if (!newDay)
     {
-       checkWhereAndAddNewPlates(plates, timeStart, timeEnd, map1, map2);
+        checkWhereAndAddNewPlates(plates, timeStart, timeEnd, map1, map2);
     }
     else
     {
@@ -194,20 +197,22 @@ void addToHashMap(string const &plates, time_type timeStart, time_type timeEnd,
 }
 
 int isParkingPaid(string const &plates, time_type currentTime,
-                  umap_t const &map, int currentLine)
+                  umap_t const &map1, umap_t const &map2, int currentLine)
 {
-    if (map.contains(plates))
-    {
-        time_type endOfStayTime = map.at(plates);
-        if (currentTime <= endOfStayTime)
-            cout << "YES " << currentLine << '\n';
-        else
-            cout << "NO " << currentLine << '\n';
+    time_type endOfStayTime1, endOfStayTime2;
+    endOfStayTime1 = endOfStayTime2 = 0;
 
-        return 0;
-    }
+    if (map1.contains(plates))
+        endOfStayTime1 = map1.at(plates);
+    if (map2.contains(plates))
+        endOfStayTime2 = map2.at(plates);
+
+    if (currentTime <= endOfStayTime1 || currentTime <= endOfStayTime2)
+        cout << "YES " << currentLine << '\n';
     else
-        return ERROR; // or cout << "NO" << currentLine << '\n'; // dont know
+        cout << "NO " << currentLine << '\n';
+    
+    return 0;
 }
 
 // input: plates time1 time2 OR plates time
@@ -237,6 +242,11 @@ int mainLoop()
 
             if (time1 < prevTime)
             {
+                if(!newDay)
+                    platesTimesMAP1.clear();
+                else
+                    platesTimesMAP2.clear();
+
                 newDay = !newDay;
                 // here we delete prev day hashmap
                 // cause when XYZ t1 t2 and t2 < t1
@@ -248,27 +258,23 @@ int mainLoop()
             if (time2Str.empty())
             {
                 if (!newDay)
-                    returnCode = isParkingPaid(plates, time1,
-                                               platesTimesMAP1, currentLine);
-                else
-                    returnCode = isParkingPaid(plates, time1,
+                    returnCode = isParkingPaid(plates, time1, platesTimesMAP1,
                                                platesTimesMAP2, currentLine);
+                else
+                    returnCode = isParkingPaid(plates, time1, platesTimesMAP2,
+                                               platesTimesMAP1, currentLine);
 
                 if (returnCode == ERROR)
-                    cerr << "ERROR" << currentLine << '\n';
+                    cerr << "ERROR " << currentLine << '\n';
             }
             else
             {
                 time_type time2 = convertTime(time2Str);
                 if (correctTimeOfStay(time1, time2))
                 {
-                    if (addToHashMap(plates, time1, time2,
-                                     platesTimesMAP1, platesTimesMAP2, newDay) == ERROR)
-                    {
-                        cerr << "ERROR" << currentLine << '\n';
-                    }
-                    else
-                        cout << "OK " << currentLine << '\n';
+                    addToHashMap(plates, time1, time2, platesTimesMAP1,
+                                     platesTimesMAP2, newDay);
+                    cout << "OK " << currentLine << '\n';
                 }
                 else
                 {
