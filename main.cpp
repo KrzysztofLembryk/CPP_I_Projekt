@@ -4,8 +4,12 @@
 #include <unordered_map>
 
 using namespace std;
+using time_type = int;
+using umap_t = unordered_map<string, time_type>;
 
-using umap_t = unordered_map<string, pair<string, string>>;
+const size_t MAX_NUBMER_OF_STRING_INPUTS = 3;
+const int ERROR = -1;
+const int END = 1;
 
 namespace
 {
@@ -15,161 +19,271 @@ namespace
     }
 }
 
-int manuallyReadData(string const &line, string *arr, size_t sizeOfArr)
+int newDataRead(string const &line, string *arr)
 {
-    size_t i, j, count, n;
-    bool foundWord = false;
-    // string line = _line + " "; // temporary solution
-    n = line.size();
-    i = j = count = 0;
-
-    // if there are only two strings on input, we dont want to have
-    // in arr[2] random values
-    for(size_t k = 0; k < sizeOfArr; k++)
-        arr[k] = "";
-
-    while (j < n && count <= 3)
+    static regex const threeArgPattern(
+        "\\s*([A-Z][A-Z0-9]{2,10})\\s+(\\d\\d?\\.\\d\\d)\\s+((\\d\\d?\\.\\d\\d))\\s*");
+    smatch match;
+    if (!regex_match(line, match, threeArgPattern))
     {
-        if (isspace(line[j]))
+        static regex const twoArgPattern(
+            "\\s*([A-Z][A-Z0-9]{2,10})\\s+(\\d\\d?\\.\\d\\d)\\s*");
+        if (!regex_match(line, match, twoArgPattern))
         {
-            // skip whitespaces
-            if (i == j)
-                i++;
-            else if (foundWord)
-            {
-                foundWord = false;
-
-                if (count < sizeOfArr)
-                    arr[count] = line.substr(i, j - i);
-
-                count++;
-
-                if (count > 3)
-                    return -1;
-
-                i = j + 1;
-            }
+            static regex const end("\\s*(zzz)\\s*");
+            if (!regex_match(line, match, end))
+                return ERROR;
+            return END;
         }
-        else
-            foundWord = true;
 
-        j++;
+        arr[0] = match[1].str();
+        arr[1] = match[2].str();
+        arr[2] = "";
     }
-    // case when last, second/third word is present but is not followed by whitespace
-    // thus we wont go to else if(foundWord) and we wont copy this string to arr
-    if (count <= 2 && !isspace(line[j - 1]))
+    else
     {
-        arr[count] = line.substr(i, j - i);
-        count++;
+        arr[0] = match[1].str();
+        arr[1] = match[2].str();
+        arr[2] = match[3].str();
     }
-    if (count < 2) // too few strings on input
-        return -1;
 
     return 0;
 }
 
-//  0 - inputStr has good format
-//  1 - inputStr is empty
-// -1 - inputStr is not in time format
-// -2 - inputStr is not in allowed by us time format
-int readTimePattern(string const &inputStr, string &result)
+int correctTimePattern(string const &inputStr)
 {
     smatch match;
-    regex timePattern("0?[0-9]\\.[0-5][0-9]|1[0-9]\\.[0-5][0-9]|2[0-3]\\.[0-5][0-9]");
     regex allowedTimePattern("0?[8-9]\\.[0-5][0-9]|1[0-9]\\.[0-5][0-9]|20\\.00");
 
-    if(inputStr.empty())
-        return 1;
-    
-    // regex won't find that 14.444 is incorrect    
-    if(inputStr.size() != 4 && inputStr.size() != 5)
-        return -1;
-
-    // first we check whether given string has correct time format 
-    regex_search(inputStr, match, timePattern);
-    result = match.str();
+    if (inputStr.empty())
+        return 0;
 
     // regex_search returns "" empty string when nothing found
-    if(result.empty())
-        return -1;
-    
-    // if string has correct time pattern, we check whether it has time pattern
-    // allowed by our rules 
-    regex_search(inputStr, match, allowedTimePattern);
-    result = match.str();
-
-    if (result.empty()) 
-        return -2;
+    if (!regex_match(inputStr, match, allowedTimePattern))
+        return ERROR;
 
     return 0;
 }
 
-int readPlatePattern(string const &inputStr, string &result)
+int convertHours(string const &time)
 {
-    regex plateNumberPattern("[A-Z][A-Z0-9]{2,10}");
-    smatch match;
-
-    regex_search(inputStr, match, plateNumberPattern);
-
-    result = match.str();
-
-    if (result.empty())
-        return -1;
-
-    return 0;
+    if (time.size() == 5)
+        return stoi(time.substr(0, 2));
+    return stoi(time.substr(0, 1));
 }
 
-void readLine() //(umap_t & mapp)
+int convertMinutes(string const &time)
 {
-    string arr[3];
-    size_t sizeArr = 3;
-    string time1, time2;
-    string plates;
-    string line;
+    if (time.size() == 5)
+        return stoi(time.substr(3, 2));
+    return stoi(time.substr(2, 2));
+}
 
-    getline(cin, line);
+time_type convertTime(string const &time)
+{
+    int hours = convertHours(time);
+    int minutes = convertMinutes(time);
+    return hours * 60 + minutes;
+}
+
+bool correctTimeOfStay(int timeStart, int timeEnd)
+{
+    int minuteDifference;
+
+    if (timeStart <= timeEnd)
+    {
+        minuteDifference = timeEnd - timeStart;
+
+        cout << "min diff: " << minuteDifference << '\n';
+    }
+    else
+    {
+        minuteDifference = 20 * 60 - timeStart + timeEnd - 8 * 60;
+
+        cout << "min diff: " << minuteDifference << '\n';
+    }
+    return minuteDifference >= 10;
+}
+
+time_type calcDiffBetweenTimes(time_type t, time_type tSubstract)
+{
+    return t - tSubstract;
+}
+
+int readLine(string const &line, string &plates,
+             string &time1, string &time2)
+{
+    string arr[MAX_NUBMER_OF_STRING_INPUTS];
+    size_t sizeArr = MAX_NUBMER_OF_STRING_INPUTS;
 
     if (nonEmptyLine(line))
     {
-        if (manuallyReadData(line, arr, sizeArr) == -1)
+        int returnCode = newDataRead(line, arr);
+        if (returnCode == ERROR)
         {
-            cout << "manuallyReadData - WRONG INPUT DATA \n";
+            cout << "WRONG INPUT DATA \n";
+            return ERROR;
+        }
+        else if (returnCode == END)
+        {
+            return END;
         }
         else
         {
-            for (int i = 0; i < 3; i++)
+            cout << "read strings: ";
+            for (int i = 0; i < MAX_NUBMER_OF_STRING_INPUTS; i++)
                 cout << arr[i] << ", ";
-
             cout << '\n';
-            if(readPlatePattern(arr[0], plates) == -1)
-            {
-                cout << "WRONG PLATE PATTERN \n";
-            }
-            else
-                cout << "plate: " << plates << '\n';
-            
-            if(readTimePattern(arr[1], time1) == -1 || readTimePattern(arr[2], time2) == -1)
+
+            if (correctTimePattern(arr[1]) == ERROR || correctTimePattern(arr[2]) == ERROR)
             {
                 cout << "WRONG TIME PATTERN \n";
+                return ERROR;
             }
             else
             {
-                cout << "time1: " << time1 << '\n';
-                cout << "time2: " << time2 << '\n';
+                plates = arr[0];
+                time1 = arr[1];
+                time2 = arr[2];
             }
-            
+        }
+    }
+    else
+        return ERROR;
+    return 0;
+}
+
+void checkWhereAndAddNewPlates(string const &plates, time_type timeStart,
+ time_type timeEnd, umap_t &map1, umap_t &map2)
+{
+    if (timeStart < timeEnd)
+    {
+        if (!map1.contains(plates))
+        {
+            map1.insert({plates, timeEnd});
+        }
+        else if (map1.at(plates) < timeEnd)
+        {
+            map1.at(plates) = timeEnd;
+        }
+    }
+    else
+    {
+        if (!map2.contains(plates))
+        {
+            map2.insert({plates, timeEnd});
+        }
+        else if (map2.at(plates) < timeEnd)
+        {
+            map2.at(plates) = timeEnd;
         }
     }
 }
 
-bool addToHashMap()
+void addToHashMap(string const &plates, time_type timeStart, time_type timeEnd,
+                  umap_t &map1, umap_t &map2, bool newDay)
 {
-    umap_t mapOfPlatesAndTimes;
+    if (!newDay)
+    {
+       checkWhereAndAddNewPlates(plates, timeStart, timeEnd, map1, map2);
+    }
+    else
+    {
+        checkWhereAndAddNewPlates(plates, timeStart, timeEnd, map2, map1);
+    }
+}
+
+int isParkingPaid(string const &plates, time_type currentTime,
+                  umap_t const &map, int currentLine)
+{
+    if (map.contains(plates))
+    {
+        time_type endOfStayTime = map.at(plates);
+        if (currentTime <= endOfStayTime)
+            cout << "YES " << currentLine << '\n';
+        else
+            cout << "NO " << currentLine << '\n';
+
+        return 0;
+    }
+    else
+        return ERROR; // or cout << "NO" << currentLine << '\n'; // dont know
+}
+
+// input: plates time1 time2 OR plates time
+int mainLoop()
+{
+    string line, plates, time1Str, time2Str;
+    umap_t platesTimesMAP1, platesTimesMAP2;
+    size_t currentLine = 0;
+    time_type prevTime;
+    bool newDay = false;
+    int returnCode;
+
+    prevTime = 8 * 60;
+
+    while (getline(cin, line))
+    {
+        currentLine++;
+        returnCode = readLine(line, plates, time1Str, time2Str);
+
+        if (returnCode == ERROR)
+            cerr << "ERROR " << currentLine << '\n';
+        else if (returnCode == END)
+            break;
+        else
+        {
+            time_type time1 = convertTime(time1Str);
+
+            if (time1 < prevTime)
+            {
+                newDay = !newDay;
+                // here we delete prev day hashmap
+                // cause when XYZ t1 t2 and t2 < t1
+                // we add this plate both to first and second hash map
+                // so we wont lose the information about this plate
+                // even though we deleted prev day hashmap
+            }
+
+            if (time2Str.empty())
+            {
+                if (!newDay)
+                    returnCode = isParkingPaid(plates, time1,
+                                               platesTimesMAP1, currentLine);
+                else
+                    returnCode = isParkingPaid(plates, time1,
+                                               platesTimesMAP2, currentLine);
+
+                if (returnCode == ERROR)
+                    cerr << "ERROR" << currentLine << '\n';
+            }
+            else
+            {
+                time_type time2 = convertTime(time2Str);
+                if (correctTimeOfStay(time1, time2))
+                {
+                    if (addToHashMap(plates, time1, time2,
+                                     platesTimesMAP1, platesTimesMAP2, newDay) == ERROR)
+                    {
+                        cerr << "ERROR" << currentLine << '\n';
+                    }
+                    else
+                        cout << "OK " << currentLine << '\n';
+                }
+                else
+                {
+                    cout << "TIME OF STAY LESS THAN 10 min\n";
+                    cerr << "ERROR " << currentLine << '\n';
+                }
+            }
+            prevTime = time1;
+        }
+    }
+    return 0;
 }
 
 int main()
 {
-    readLine();
-
+    mainLoop();
     return 0;
 }
