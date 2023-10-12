@@ -134,29 +134,24 @@ void checkWhereAndAddNewPlates(string const &plates, time_type timeStart,
 {
     if (timeStart < timeEnd)
     {
-        if (map1.empty() || !map1.contains(plates))
+        if (!map1.contains(plates))
             map1.insert({plates, timeEnd});
         else if (map1.at(plates) < timeEnd)
             map1.at(plates) = timeEnd;
     }
     else
     {
-        cout << "t1 > t2\n";
+        if (!map2.contains(plates))
+            map2.insert({plates, timeEnd});
+        else if (map2.at(plates) < timeEnd)
+            map2.at(plates) = timeEnd;
 
-            if (!map2.contains(plates))
-                map2.insert({plates, timeEnd});
-            else if (map2.at(plates) < timeEnd)
-                map2.at(plates) = timeEnd;
-        
-        
         // timeStart > timeEnd so car can stay for whole current day
         // current day map is map1
-        if(!map1.contains(plates))
+        if (!map1.contains(plates))
             map1.insert({plates, 20 * 60});
         else
             map1.at(plates) = 20 * 60;
-
-        
     }
 }
 
@@ -164,11 +159,7 @@ void addToHashMap(string const &plates, time_type timeStart, time_type timeEnd,
                   umap_t &map1, umap_t &map2, bool newDay)
 {
     if (!newDay)
-    {
-        cout << "day 1\n";
         checkWhereAndAddNewPlates(plates, timeStart, timeEnd, map1, map2);
-    }
-        
     else
         checkWhereAndAddNewPlates(plates, timeStart, timeEnd, map2, map1);
 }
@@ -188,7 +179,7 @@ int isParkingPaid(string const &plates, time_type currentTime,
         cout << "YES " << currentLine << '\n';
     else
         cout << "NO " << currentLine << '\n';
-    
+
     return 0;
 }
 
@@ -219,7 +210,7 @@ int mainLoop()
 
             if (time1 < prevTime)
             {
-                if(!newDay)
+                if (!newDay)
                     platesTimesMAP1.clear();
                 else
                     platesTimesMAP2.clear();
@@ -246,13 +237,11 @@ int mainLoop()
             }
             else
             {
-                cout << "before correct time of stay\n";
                 time_type time2 = convertTime(time2Str);
                 if (correctTimeOfStay(time1, time2))
                 {
-                    cout << "correct time of stay\n";
                     addToHashMap(plates, time1, time2, platesTimesMAP1,
-                                     platesTimesMAP2, newDay);
+                                 platesTimesMAP2, newDay);
                     cout << "OK " << currentLine << '\n';
                 }
                 else
