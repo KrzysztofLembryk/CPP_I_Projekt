@@ -24,6 +24,7 @@ int newDataRead(string const &line, string *arr)
     static regex const threeArgPattern(
         "\\s*([A-Z][A-Z0-9]{2,10})\\s+(\\d\\d?\\.\\d\\d)\\s+((\\d\\d?\\.\\d\\d))\\s*");
     smatch match;
+
     if (!regex_match(line, match, threeArgPattern))
     {
         static regex const twoArgPattern(
@@ -91,55 +92,30 @@ bool correctTimeOfStay(int timeStart, int timeEnd)
     int minuteDifference;
 
     if (timeStart <= timeEnd)
-    {
         minuteDifference = timeEnd - timeStart;
-
-        cout << "min diff: " << minuteDifference << '\n';
-    }
     else
-    {
         minuteDifference = 20 * 60 - timeStart + timeEnd - 8 * 60;
 
-        cout << "min diff: " << minuteDifference << '\n';
-    }
     return minuteDifference >= 10;
-}
-
-time_type calcDiffBetweenTimes(time_type t, time_type tSubstract)
-{
-    return t - tSubstract;
 }
 
 int readLine(string const &line, string &plates,
              string &time1, string &time2)
 {
     string arr[MAX_NUBMER_OF_STRING_INPUTS];
-    size_t sizeArr = MAX_NUBMER_OF_STRING_INPUTS;
+    // size_t sizeArr = MAX_NUBMER_OF_STRING_INPUTS;
 
     if (nonEmptyLine(line))
     {
         int returnCode = newDataRead(line, arr);
         if (returnCode == ERROR)
-        {
-            cout << "WRONG INPUT DATA \n";
             return ERROR;
-        }
         else if (returnCode == END)
-        {
             return END;
-        }
         else
         {
-            cout << "read strings: ";
-            for (int i = 0; i < MAX_NUBMER_OF_STRING_INPUTS; i++)
-                cout << arr[i] << ", ";
-            cout << '\n';
-
             if (correctTimePattern(arr[1]) == ERROR || correctTimePattern(arr[2]) == ERROR)
-            {
-                cout << "WRONG TIME PATTERN \n";
                 return ERROR;
-            }
             else
             {
                 plates = arr[0];
@@ -158,28 +134,29 @@ void checkWhereAndAddNewPlates(string const &plates, time_type timeStart,
 {
     if (timeStart < timeEnd)
     {
-        if (!map1.contains(plates))
-        {
+        if (map1.empty() || !map1.contains(plates))
             map1.insert({plates, timeEnd});
-        }
         else if (map1.at(plates) < timeEnd)
-        {
             map1.at(plates) = timeEnd;
-        }
     }
     else
     {
-        if (!map2.contains(plates))
-        {
-            map2.insert({plates, timeEnd});
-        }
-        else if (map2.at(plates) < timeEnd)
-        {
-            map2.at(plates) = timeEnd;
-        }
+        cout << "t1 > t2\n";
+
+            if (!map2.contains(plates))
+                map2.insert({plates, timeEnd});
+            else if (map2.at(plates) < timeEnd)
+                map2.at(plates) = timeEnd;
+        
+        
         // timeStart > timeEnd so car can stay for whole current day
         // current day map is map1
-        map1.at(plates) = 20 * 60;
+        if(!map1.contains(plates))
+            map1.insert({plates, 20 * 60});
+        else
+            map1.at(plates) = 20 * 60;
+
+        
     }
 }
 
@@ -188,12 +165,12 @@ void addToHashMap(string const &plates, time_type timeStart, time_type timeEnd,
 {
     if (!newDay)
     {
+        cout << "day 1\n";
         checkWhereAndAddNewPlates(plates, timeStart, timeEnd, map1, map2);
     }
+        
     else
-    {
         checkWhereAndAddNewPlates(plates, timeStart, timeEnd, map2, map1);
-    }
 }
 
 int isParkingPaid(string const &plates, time_type currentTime,
@@ -269,18 +246,17 @@ int mainLoop()
             }
             else
             {
+                cout << "before correct time of stay\n";
                 time_type time2 = convertTime(time2Str);
                 if (correctTimeOfStay(time1, time2))
                 {
+                    cout << "correct time of stay\n";
                     addToHashMap(plates, time1, time2, platesTimesMAP1,
                                      platesTimesMAP2, newDay);
                     cout << "OK " << currentLine << '\n';
                 }
                 else
-                {
-                    cout << "TIME OF STAY LESS THAN 10 min\n";
                     cerr << "ERROR " << currentLine << '\n';
-                }
             }
             prevTime = time1;
         }
