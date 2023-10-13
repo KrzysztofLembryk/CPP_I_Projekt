@@ -99,7 +99,7 @@ namespace
         return minuteDifference >= 10 && minuteDifference < 720;
     }
 
-    // Function handles wrong input data, zzz command, and if data is correct
+    // Function handles wrong input data and if data is correct
     // it is saved to plates, time1 and time2 variables.
     int readLine(string const &line, string &plates,
                  string &time1, string &time2)
@@ -207,8 +207,7 @@ namespace
     }
 
     // This function handles all errors and prints appropriate messages.
-    // It reads input and acts accordingly to the command. It handles
-    //
+    // It reads input and acts accordingly to the command.
     int mainLoop()
     {
         string line, plates, time1Str, time2Str;
