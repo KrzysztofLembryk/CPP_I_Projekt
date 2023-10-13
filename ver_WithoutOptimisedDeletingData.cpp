@@ -2,12 +2,10 @@
 #include <string>
 #include <regex>
 #include <unordered_map>
-#include <queue>
 
 using namespace std;
 using time_type = int;
 using umap_t = unordered_map<string, time_type>;
-using pqueue_t = std::priority_queue<pair<time_type, string>>;
 
 const size_t MAX_NUBMER_OF_STRING_INPUTS = 3;
 const int ERROR = -1;
@@ -21,13 +19,10 @@ namespace
     }
 }
 
-// Function gets input string of data, checks if data is in correct
-// format, if not it returns ERROR, otherwise it saves read data to
-// string array arr[].
-int checkPatternAndReadData(string const &line, string *arr)
+int newDataRead(string const &line, string *arr)
 {
     static regex const threeArgPattern(
-    "\\s*([A-Z][A-Z0-9]{2,10})\\s+(\\d\\d?\\.\\d\\d)\\s+((\\d\\d?\\.\\d\\d))\\s*");
+        "\\s*([A-Z][A-Z0-9]{2,10})\\s+(\\d\\d?\\.\\d\\d)\\s+((\\d\\d?\\.\\d\\d))\\s*");
     smatch match;
 
     if (!regex_match(line, match, threeArgPattern))
@@ -104,17 +99,15 @@ bool correctTimeOfStay(int timeStart, int timeEnd)
     return minuteDifference >= 10;
 }
 
-// Function handles wrong input data, zzz command, and if data is correct
-// it is saved to plates, time1 and time2 variables.
 int readLine(string const &line, string &plates,
              string &time1, string &time2)
 {
     string arr[MAX_NUBMER_OF_STRING_INPUTS];
+    // size_t sizeArr = MAX_NUBMER_OF_STRING_INPUTS;
 
     if (nonEmptyLine(line))
     {
-        int returnCode = checkPatternAndReadData(line, arr);
-
+        int returnCode = newDataRead(line, arr);
         if (returnCode == ERROR)
             return ERROR;
         else if (returnCode == END)
@@ -133,46 +126,28 @@ int readLine(string const &line, string &plates,
     }
     else
         return ERROR;
-    
     return 0;
 }
 
-// Function checks to which map and queue new plates with new time of stay
-// should be added. If given plates already exist in one of the maps,
-// function updates time of stay if necessary. Function also handles 
-// situation where car stays for another day.
 void checkWhereAndAddNewPlates(string const &plates, time_type timeStart,
-                               time_type timeEnd, umap_t &map1, umap_t &map2,
-                               pqueue_t &queue1, pqueue_t &queue2)
+                               time_type timeEnd, umap_t &map1, umap_t &map2)
 {
     if (timeStart < timeEnd)
     {
         if (!map1.contains(plates))
-        {
             map1.insert({plates, timeEnd});
-            queue1.push({timeEnd, plates});
-        }
         else if (map1.at(plates) < timeEnd)
-        {
             map1.at(plates) = timeEnd;
-            queue1.push({timeEnd, plates});
-        }
     }
     else
     {
         if (!map2.contains(plates))
-        {
             map2.insert({plates, timeEnd});
-            queue2.push({timeEnd, plates});
-        }
         else if (map2.at(plates) < timeEnd)
-        {
             map2.at(plates) = timeEnd;
-            queue2.push({timeEnd, plates});
-        }
 
-        // timeStart > timeEnd so car can stay for whole current day.
-        // Current day map is map1.
+        // timeStart > timeEnd so car can stay for whole current day
+        // current day map is map1
         if (!map1.contains(plates))
             map1.insert({plates, 20 * 60});
         else
@@ -181,16 +156,12 @@ void checkWhereAndAddNewPlates(string const &plates, time_type timeStart,
 }
 
 void addToHashMap(string const &plates, time_type timeStart, time_type timeEnd,
-                  umap_t &map1, umap_t &map2,
-                  pqueue_t &queue1, pqueue_t &queue2, 
-                  bool newDay)
+                  umap_t &map1, umap_t &map2, bool newDay)
 {
     if (!newDay)
-        checkWhereAndAddNewPlates(plates, timeStart, timeEnd, map1, map2,
-          queue1, queue2);
+        checkWhereAndAddNewPlates(plates, timeStart, timeEnd, map1, map2);
     else
-        checkWhereAndAddNewPlates(plates, timeStart, timeEnd, map2, map1,
-          queue2, queue1);
+        checkWhereAndAddNewPlates(plates, timeStart, timeEnd, map2, map1);
 }
 
 int isParkingPaid(string const &plates, time_type currentTime,
@@ -212,14 +183,11 @@ int isParkingPaid(string const &plates, time_type currentTime,
     return 0;
 }
 
-// This function handles all errors and prints appropriate messages.
-// It reads input and acts accordingly to the command. It handles
-//
+// input: plates time1 time2 OR plates time
 int mainLoop()
 {
     string line, plates, time1Str, time2Str;
     umap_t platesTimesMAP1, platesTimesMAP2;
-    pqueue_t queue1, queue2;
     size_t currentLine = 0;
     time_type prevTime;
     bool newDay = false;
@@ -243,33 +211,18 @@ int mainLoop()
             if (time1 < prevTime)
             {
                 if (!newDay)
-                {
                     platesTimesMAP1.clear();
-                    queue1 = pqueue_t();
-                }
                 else
-                {
                     platesTimesMAP2.clear();
-                    queue2 = pqueue_t();
-                }
 
                 newDay = !newDay;
+                // here we delete prev day hashmap
+                // cause when XYZ t1 t2 and t2 < t1
+                // we add this plate both to first and second hash map
+                // so we wont lose the information about this plate
+                // even though we deleted prev day hashmap
             }
 
-            if (!newDay)
-            {
-                while (!queue1.empty() and queue1.top().first < time1) {
-                    platesTimesMAP1.erase(queue1.top().second);
-                    queue1.pop();
-                }
-            }
-            else
-            {
-                while (!queue2.empty() and queue2.top().first < time1) {
-                    platesTimesMAP2.erase(queue2.top().second);
-                    queue2.pop();
-                }
-            }
             if (time2Str.empty())
             {
                 if (!newDay)
@@ -285,11 +238,10 @@ int mainLoop()
             else
             {
                 time_type time2 = convertTime(time2Str);
-
                 if (correctTimeOfStay(time1, time2))
                 {
                     addToHashMap(plates, time1, time2, platesTimesMAP1,
-                                 platesTimesMAP2, queue1, queue2, newDay);
+                                 platesTimesMAP2, newDay);
                     cout << "OK " << currentLine << '\n';
                 }
                 else
