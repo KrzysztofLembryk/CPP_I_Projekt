@@ -101,7 +101,7 @@ bool correctTimeOfStay(int timeStart, int timeEnd)
     else
         minuteDifference = 20 * 60 - timeStart + timeEnd - 8 * 60;
 
-    return minuteDifference >= 10;
+    return minuteDifference >= 10 && minuteDifference < 720; 
 }
 
 // Function handles wrong input data, zzz command, and if data is correct
@@ -194,7 +194,7 @@ void addToHashMap(string const &plates, time_type timeStart, time_type timeEnd,
 }
 
 int isParkingPaid(string const &plates, time_type currentTime,
-                  umap_t const &map1, umap_t const &map2, int currentLine)
+                  umap_t const &map1, umap_t const &map2, size_t currentLine)
 {
     time_type endOfStayTime1, endOfStayTime2;
     endOfStayTime1 = endOfStayTime2 = 0;
