@@ -207,7 +207,8 @@ namespace
     }
 
     // This function handles all errors and prints appropriate messages.
-    // It reads input and acts accordingly to the command.
+    // It reads input and acts accordingly to the command. It also erases
+    // obsolete plates from appropriate maps.
     int mainLoop()
     {
         string line, plates, time1Str, time2Str;
