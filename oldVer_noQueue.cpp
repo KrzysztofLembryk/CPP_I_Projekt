@@ -21,21 +21,17 @@ namespace
 
 int newDataRead(string const &line, string *arr)
 {
-    static regex const threeArgPattern(
-        "\\s*([A-Z][A-Z0-9]{2,10})\\s+(\\d\\d?\\.\\d\\d)\\s+((\\d\\d?\\.\\d\\d))\\s*");
+    string pattern1 = "\\s*([A-Z][A-Z0-9]{2,10})\\s+";
+    string pattern2 = "(\\d\\d?\\.\\d\\d)\\s";
+    static regex const threeArgPattern(pattern1 + pattern2 + "+" +
+                                       pattern2 + "*");
     smatch match;
 
     if (!regex_match(line, match, threeArgPattern))
     {
-        static regex const twoArgPattern(
-            "\\s*([A-Z][A-Z0-9]{2,10})\\s+(\\d\\d?\\.\\d\\d)\\s*");
+        static regex const twoArgPattern(pattern1 + pattern2 + "*");
         if (!regex_match(line, match, twoArgPattern))
-        {
-            static regex const end("\\s*(zzz)\\s*");
-            if (!regex_match(line, match, end))
-                return ERROR;
-            return END;
-        }
+            return ERROR;
 
         arr[0] = match[1].str();
         arr[1] = match[2].str();
@@ -96,22 +92,19 @@ bool correctTimeOfStay(int timeStart, int timeEnd)
     else
         minuteDifference = 20 * 60 - timeStart + timeEnd - 8 * 60;
 
-    return minuteDifference >= 10;
+    return minuteDifference >= 10 && minuteDifference < 720;
 }
 
 int readLine(string const &line, string &plates,
              string &time1, string &time2)
 {
     string arr[MAX_NUBMER_OF_STRING_INPUTS];
-    // size_t sizeArr = MAX_NUBMER_OF_STRING_INPUTS;
 
     if (nonEmptyLine(line))
     {
         int returnCode = newDataRead(line, arr);
         if (returnCode == ERROR)
             return ERROR;
-        else if (returnCode == END)
-            return END;
         else
         {
             if (correctTimePattern(arr[1]) == ERROR || correctTimePattern(arr[2]) == ERROR)
@@ -202,8 +195,6 @@ int mainLoop()
 
         if (returnCode == ERROR)
             cerr << "ERROR " << currentLine << '\n';
-        else if (returnCode == END)
-            break;
         else
         {
             time_type time1 = convertTime(time1Str);
