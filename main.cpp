@@ -252,7 +252,10 @@ namespace
                 {
                     while (!queue1.empty() and queue1.top().first < time1)
                     {
-                        platesTimesMAP1.erase(queue1.top().second);
+                        string plates = queue1.top().second;
+                        if (platesTimesMAP1[plates] == queue1.top().first) {
+                          platesTimesMAP1.erase(plates);
+                        }
                         queue1.pop();
                     }
                 }
@@ -260,7 +263,10 @@ namespace
                 {
                     while (!queue2.empty() and queue2.top().first < time1)
                     {
-                        platesTimesMAP2.erase(queue2.top().second);
+                        string plates = queue2.top().second;
+                        if (platesTimesMAP2[plates] == queue2.top().first) {
+                          platesTimesMAP2.erase(plates);
+                        }
                         queue2.pop();
                     }
                 }
