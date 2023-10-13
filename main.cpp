@@ -13,7 +13,6 @@ namespace
 {
     const size_t MAX_NUBMER_OF_STRING_INPUTS = 3;
     const int ERROR = -1;
-    const int END = 1;
 
     bool nonEmptyLine(string const &line)
     {
@@ -36,12 +35,7 @@ namespace
             static regex const twoArgPattern(pattern1 + pattern2 + "*");
 
             if (!regex_match(line, match, twoArgPattern))
-            {
-                static regex const end("\\s*(zzz)\\s*");
-                if (!regex_match(line, match, end))
-                    return ERROR;
-                return END;
-            }
+                return ERROR;
 
             arr[0] = match[1].str();
             arr[1] = match[2].str();
@@ -118,8 +112,6 @@ namespace
 
             if (returnCode == ERROR)
                 return ERROR;
-            else if (returnCode == END)
-                return END;
             else
             {
                 if (correctTimePattern(arr[1]) == ERROR ||
@@ -236,8 +228,6 @@ namespace
 
             if (returnCode == ERROR)
                 cerr << "ERROR " << currentLine << '\n';
-            else if (returnCode == END)
-                break;
             else
             {
                 time_type time1 = convertTime(time1Str);
