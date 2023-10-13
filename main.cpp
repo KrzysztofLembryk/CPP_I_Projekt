@@ -26,14 +26,17 @@ namespace
 // string array arr[].
 int checkPatternAndReadData(string const &line, string *arr)
 {
-    static regex const threeArgPattern(
-    "\\s*([A-Z][A-Z0-9]{2,10})\\s+(\\d\\d?\\.\\d\\d)\\s+((\\d\\d?\\.\\d\\d))\\s*");
+    // "\\s*([A-Z][A-Z0-9]{2,10})\\s+(\\d\\d?\\.\\d\\d)\\s+((\\d\\d?\\.\\d\\d))\\s*"
+    string pattern1 = "\\s*([A-Z][A-Z0-9]{2,10})\\s+";
+    string pattern2 = "(\\d\\d?\\.\\d\\d)\\s";
+    static regex const threeArgPattern(pattern1 + pattern2 + "+" +
+         pattern2 + "*");
     smatch match;
 
     if (!regex_match(line, match, threeArgPattern))
     {
-        static regex const twoArgPattern(
-            "\\s*([A-Z][A-Z0-9]{2,10})\\s+(\\d\\d?\\.\\d\\d)\\s*");
+        static regex const twoArgPattern(pattern1 + pattern2 + "*");
+
         if (!regex_match(line, match, twoArgPattern))
         {
             static regex const end("\\s*(zzz)\\s*");
@@ -59,13 +62,13 @@ int checkPatternAndReadData(string const &line, string *arr)
 int correctTimePattern(string const &inputStr)
 {
     smatch match;
-    regex allowedTimePattern("0?[8-9]\\.[0-5][0-9]|1[0-9]\\.[0-5][0-9]|20\\.00");
+    regex timePattern("0?[8-9]\\.[0-5][0-9]|1[0-9]\\.[0-5][0-9]|20\\.00");
 
     if (inputStr.empty())
         return 0;
 
     // regex_search returns "" empty string when nothing found
-    if (!regex_match(inputStr, match, allowedTimePattern))
+    if (!regex_match(inputStr, match, timePattern))
         return ERROR;
 
     return 0;
@@ -101,7 +104,7 @@ bool correctTimeOfStay(int timeStart, int timeEnd)
     else
         minuteDifference = 20 * 60 - timeStart + timeEnd - 8 * 60;
 
-    return minuteDifference >= 10 && minuteDifference < 720; 
+    return minuteDifference >= 10 && minuteDifference < 720;
 }
 
 // Function handles wrong input data, zzz command, and if data is correct
@@ -121,7 +124,8 @@ int readLine(string const &line, string &plates,
             return END;
         else
         {
-            if (correctTimePattern(arr[1]) == ERROR || correctTimePattern(arr[2]) == ERROR)
+            if (correctTimePattern(arr[1]) == ERROR ||
+                correctTimePattern(arr[2]) == ERROR)
                 return ERROR;
             else
             {
@@ -133,13 +137,13 @@ int readLine(string const &line, string &plates,
     }
     else
         return ERROR;
-    
+
     return 0;
 }
 
 // Function checks to which map and queue new plates with new time of stay
 // should be added. If given plates already exist in one of the maps,
-// function updates time of stay if necessary. Function also handles 
+// function updates time of stay if necessary. Function also handles
 // situation where car stays for another day.
 void checkWhereAndAddNewPlates(string const &plates, time_type timeStart,
                                time_type timeEnd, umap_t &map1, umap_t &map2,
@@ -182,15 +186,15 @@ void checkWhereAndAddNewPlates(string const &plates, time_type timeStart,
 
 void addToHashMap(string const &plates, time_type timeStart, time_type timeEnd,
                   umap_t &map1, umap_t &map2,
-                  pqueue_t &queue1, pqueue_t &queue2, 
+                  pqueue_t &queue1, pqueue_t &queue2,
                   bool newDay)
 {
     if (!newDay)
         checkWhereAndAddNewPlates(plates, timeStart, timeEnd, map1, map2,
-          queue1, queue2);
+                                  queue1, queue2);
     else
         checkWhereAndAddNewPlates(plates, timeStart, timeEnd, map2, map1,
-          queue2, queue1);
+                                  queue2, queue1);
 }
 
 int isParkingPaid(string const &plates, time_type currentTime,
@@ -258,14 +262,16 @@ int mainLoop()
 
             if (!newDay)
             {
-                while (!queue1.empty() and queue1.top().first < time1) {
+                while (!queue1.empty() and queue1.top().first < time1)
+                {
                     platesTimesMAP1.erase(queue1.top().second);
                     queue1.pop();
                 }
             }
             else
             {
-                while (!queue2.empty() and queue2.top().first < time1) {
+                while (!queue2.empty() and queue2.top().first < time1)
+                {
                     platesTimesMAP2.erase(queue2.top().second);
                     queue2.pop();
                 }
