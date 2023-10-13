@@ -2,10 +2,12 @@
 #include <string>
 #include <regex>
 #include <unordered_map>
+#include <queue>
 
 using namespace std;
 using time_type = int;
 using umap_t = unordered_map<string, time_type>;
+using pqueue_t = std::priority_queue<pair<time_type, string>>;
 
 const size_t MAX_NUBMER_OF_STRING_INPUTS = 3;
 const int ERROR = -1;
@@ -130,21 +132,34 @@ int readLine(string const &line, string &plates,
 }
 
 void checkWhereAndAddNewPlates(string const &plates, time_type timeStart,
-                               time_type timeEnd, umap_t &map1, umap_t &map2)
+                               time_type timeEnd, umap_t &map1, umap_t &map2,
+                               pqueue_t &queue1, pqueue_t &queue2)
 {
     if (timeStart < timeEnd)
     {
         if (!map1.contains(plates))
+        {
             map1.insert({plates, timeEnd});
+            queue1.push({timeEnd, plates});
+        }
         else if (map1.at(plates) < timeEnd)
+        {
             map1.at(plates) = timeEnd;
+            queue1.push({timeEnd, plates});
+        }
     }
     else
     {
         if (!map2.contains(plates))
+        {
             map2.insert({plates, timeEnd});
+            queue2.push({timeEnd, plates});
+        }
         else if (map2.at(plates) < timeEnd)
+        {
             map2.at(plates) = timeEnd;
+            queue2.push({timeEnd, plates});
+        }
 
         // timeStart > timeEnd so car can stay for whole current day
         // current day map is map1
@@ -156,12 +171,16 @@ void checkWhereAndAddNewPlates(string const &plates, time_type timeStart,
 }
 
 void addToHashMap(string const &plates, time_type timeStart, time_type timeEnd,
-                  umap_t &map1, umap_t &map2, bool newDay)
+                  umap_t &map1, umap_t &map2,
+                  pqueue_t &queue1, pqueue_t &queue2, 
+                  bool newDay)
 {
     if (!newDay)
-        checkWhereAndAddNewPlates(plates, timeStart, timeEnd, map1, map2);
+        checkWhereAndAddNewPlates(plates, timeStart, timeEnd, map1, map2,
+          queue1, queue2);
     else
-        checkWhereAndAddNewPlates(plates, timeStart, timeEnd, map2, map1);
+        checkWhereAndAddNewPlates(plates, timeStart, timeEnd, map2, map1,
+          queue2, queue1);
 }
 
 int isParkingPaid(string const &plates, time_type currentTime,
@@ -188,6 +207,7 @@ int mainLoop()
 {
     string line, plates, time1Str, time2Str;
     umap_t platesTimesMAP1, platesTimesMAP2;
+    pqueue_t queue1, queue2;
     size_t currentLine = 0;
     time_type prevTime;
     bool newDay = false;
@@ -211,9 +231,15 @@ int mainLoop()
             if (time1 < prevTime)
             {
                 if (!newDay)
+                {
                     platesTimesMAP1.clear();
+                    queue1 = pqueue_t();
+                }
                 else
+                {
                     platesTimesMAP2.clear();
+                    queue2 = pqueue_t();
+                }
 
                 newDay = !newDay;
                 // here we delete prev day hashmap
@@ -223,6 +249,20 @@ int mainLoop()
                 // even though we deleted prev day hashmap
             }
 
+            if (!newDay)
+            {
+                while (!queue1.empty() and queue1.top().first < time1) {
+                    platesTimesMAP1.erase(queue1.top().second);
+                    queue1.pop();
+                }
+            }
+            else
+            {
+                while (!queue2.empty() and queue2.top().first < time1) {
+                    platesTimesMAP2.erase(queue2.top().second);
+                    queue2.pop();
+                }
+            }
             if (time2Str.empty())
             {
                 if (!newDay)
@@ -241,7 +281,7 @@ int mainLoop()
                 if (correctTimeOfStay(time1, time2))
                 {
                     addToHashMap(plates, time1, time2, platesTimesMAP1,
-                                 platesTimesMAP2, newDay);
+                                 platesTimesMAP2, queue1, queue2, newDay);
                     cout << "OK " << currentLine << '\n';
                 }
                 else
